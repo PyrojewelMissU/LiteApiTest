@@ -1,0 +1,16 @@
+---
+# API测试配置
+api:
+  rootUrl: https://jsonplaceholder.typicode.com
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  params:
+    # 公共参数
+    test_env: production
+
+# 项目配置
+project:
+  name: API自动化测试平台
+  version: 2.0
+  description: 使用现代化技术栈的API测试平台

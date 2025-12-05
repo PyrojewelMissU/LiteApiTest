@@ -1,0 +1,110 @@
+---
+# API测试数据 - YAML格式
+# 使用JSONPlaceholder (https://jsonplaceholder.typicode.com) 作为测试API
+
+# 用户管理测试用例
+- run: true
+  desc: 获取所有用户列表
+  url: /users
+  method: GET
+  param: "{}"
+  contains: false
+  status: 200
+  verify: "$[0].id=1;$[0].name=Leanne Graham"
+  save: "first_user_id=$[0].id"
+  preParam: ""
+  sleep: 0
+  sheetName: 用户管理
+
+- run: true
+  desc: 根据ID获取用户信息
+  url: /users/${first_user_id}
+  method: GET
+  param: "{}"
+  contains: false
+  status: 200
+  verify: "$.id=${first_user_id};$.name=Leanne Graham"
+  save: "user_email=$.email"
+  preParam: ""
+  sleep: 0
+  sheetName: 用户管理
+
+- run: true
+  desc: 创建新用户
+  url: /users
+  method: POST
+  param: '{"name":"Test User","username":"testuser","email":"test@example.com"}'
+  contains: false
+  status: 201
+  verify: "$.name=Test User;$.email=test@example.com"
+  save: "new_user_id=$.id"
+  preParam: ""
+  sleep: 0
+  sheetName: 用户管理
+
+- run: true
+  desc: 更新用户信息
+  url: /users/1
+  method: PUT
+  param: '{"id":1,"name":"Updated Name","username":"updateduser","email":"updated@example.com"}'
+  contains: false
+  status: 200
+  verify: "$.name=Updated Name"
+  save: ""
+  preParam: ""
+  sleep: 0
+  sheetName: 用户管理
+
+# 文章管理测试用例
+- run: true
+  desc: 获取所有文章
+  url: /posts
+  method: GET
+  param: "{}"
+  contains: false
+  status: 200
+  verify: "$[0].userId=__isNotEmpty()"
+  save: "first_post_id=$[0].id"
+  preParam: ""
+  sleep: 0
+  sheetName: 文章管理
+
+- run: true
+  desc: 根据ID获取文章
+  url: /posts/${first_post_id}
+  method: GET
+  param: "{}"
+  contains: false
+  status: 200
+  verify: "$.id=${first_post_id};$.userId=__isNotEmpty()"
+  save: "post_title=$.title"
+  preParam: ""
+  sleep: 0
+  sheetName: 文章管理
+
+- run: true
+  desc: 创建新文章
+  url: /posts
+  method: POST
+  param: '{"userId":1,"title":"Test Post","body":"This is a test post"}'
+  contains: false
+  status: 201
+  verify: "$.title=Test Post"
+  save: ""
+  preParam: ""
+  sleep: 0
+  sheetName: 文章管理
+
+# 评论管理测试用例
+- run: true
+  desc: 获取文章的所有评论
+  url: /posts/1/comments
+  method: GET
+  param: "{}"
+  contains: false
+  status: 200
+  verify: "$[0].postId=1"
+  save: "first_comment_id=$[0].id"
+  preParam: ""
+  sleep: 0
+  sheetName: 评论管理

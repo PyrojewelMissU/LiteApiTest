@@ -103,13 +103,32 @@ public class ApiTestModern extends TestBase {
         logger.info("API test initialization completed");
     }
 
-    @Parameters({ "excelPath", "sheetName" })
+    @Parameters({ "dataPath", "dataFormat" })
     @BeforeTest
     public void readData(
-            @org.testng.annotations.Optional("case/api-data.xls") String excelPath,
-            @org.testng.annotations.Optional("Sheet1") String sheetName) throws DocumentException {
-        dataList = readExcelData(ApiDataBean.class, excelPath.split(";"), sheetName.split(";"));
-        logger.info("Loaded {} test cases", dataList.size());
+            @org.testng.annotations.Optional("data/api-test-data.json") String dataPath,
+            @org.testng.annotations.Optional("json") String dataFormat) throws DocumentException {
+
+        logger.info("Loading test data from: {} (format: {})", dataPath, dataFormat);
+
+        String fullPath = Paths.get(System.getProperty("user.dir"), dataPath).toString();
+
+        // 根据格式读取数据
+        if ("json".equalsIgnoreCase(dataFormat)) {
+            dataList = JsonDataReader.readJson(ApiDataBean.class, fullPath);
+        } else if ("yaml".equalsIgnoreCase(dataFormat) || "yml".equalsIgnoreCase(dataFormat)) {
+            dataList = YamlDataReader.readYaml(ApiDataBean.class, fullPath);
+        } else if ("excel".equalsIgnoreCase(dataFormat) || "xls".equalsIgnoreCase(dataFormat)) {
+            // 向后兼容Excel格式
+            String[] paths = dataPath.split(";");
+            String sheetName = "Sheet1"; // 默认sheet名
+            dataList = readExcelData(ApiDataBean.class, paths, new String[]{sheetName});
+        } else {
+            // 使用DataReaderFactory自动识别
+            dataList = DataReaderFactory.readData(ApiDataBean.class, fullPath);
+        }
+
+        logger.info("Loaded {} test cases from {}", dataList.size(), dataPath);
     }
 
     /**
