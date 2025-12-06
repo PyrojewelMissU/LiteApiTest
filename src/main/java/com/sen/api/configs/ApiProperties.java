@@ -200,6 +200,11 @@ public class ApiProperties {
         private String dataPath = "data/api-test-data.json";
         private String dataFormat = "json";
 
+        /**
+         * 超时配置
+         */
+        private TimeoutConfig timeout = new TimeoutConfig();
+
         public int getParallelThreads() {
             return parallelThreads;
         }
@@ -238,6 +243,71 @@ public class ApiProperties {
 
         public void setDataFormat(String dataFormat) {
             this.dataFormat = dataFormat;
+        }
+
+        public TimeoutConfig getTimeout() {
+            return timeout;
+        }
+
+        public void setTimeout(TimeoutConfig timeout) {
+            this.timeout = timeout;
+        }
+    }
+
+    /**
+     * HTTP超时配置
+     */
+    public static class TimeoutConfig {
+        /**
+         * 连接超时（毫秒）
+         */
+        private int connect = 5000;
+
+        /**
+         * 读取超时（毫秒）
+         */
+        private int read = 30000;
+
+        /**
+         * 写入超时（毫秒）
+         */
+        private int write = 30000;
+
+        /**
+         * 连接池获取超时（毫秒）
+         */
+        private int connectionRequest = 5000;
+
+        public int getConnect() {
+            return connect;
+        }
+
+        public void setConnect(int connect) {
+            this.connect = connect;
+        }
+
+        public int getRead() {
+            return read;
+        }
+
+        public void setRead(int read) {
+            this.read = read;
+        }
+
+        public int getWrite() {
+            return write;
+        }
+
+        public void setWrite(int write) {
+            this.write = write;
+        }
+
+        public int getConnectionRequest() {
+            return connectionRequest;
+        }
+
+        public void setConnectionRequest(int connectionRequest) {
+            this.connectionRequest = connectionRequest;
         }
     }
 }

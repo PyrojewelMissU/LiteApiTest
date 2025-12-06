@@ -105,6 +105,26 @@ public class ApiDataBean extends BaseBean {
      */
     private String caseId;
 
+    // ==================== 测试套件管理字段 ====================
+
+    /**
+     * 测试标签（逗号分隔）
+     * 用于筛选和分组执行测试用例
+     * 例如: "smoke,login,P0"
+     */
+    private String tags;
+
+    /**
+     * 测试分组
+     * 例如: "auth", "user", "order"
+     */
+    private String group;
+
+    /**
+     * 优先级（1-5，1最高）
+     */
+    private int priority = 3;
+
     // ==================== Getters and Setters ====================
 
     public boolean isRun() {
@@ -243,9 +263,63 @@ public class ApiDataBean extends BaseBean {
         this.caseId = caseId;
     }
 
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    /**
+     * 检查是否包含指定标签
+     */
+    public boolean hasTag(String tag) {
+        if (tags == null || tags.isEmpty()) {
+            return false;
+        }
+        String[] tagArray = tags.split(",");
+        for (String t : tagArray) {
+            if (t.trim().equalsIgnoreCase(tag.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 获取标签数组
+     */
+    public String[] getTagArray() {
+        if (tags == null || tags.isEmpty()) {
+            return new String[0];
+        }
+        String[] tagArray = tags.split(",");
+        for (int i = 0; i < tagArray.length; i++) {
+            tagArray[i] = tagArray[i].trim();
+        }
+        return tagArray;
+    }
+
     @Override
     public String toString() {
-        return String.format("ApiDataBean{caseId='%s', desc='%s', method='%s', url='%s'}",
-                this.caseId, this.desc, this.method, this.url);
+        return String.format("ApiDataBean{caseId='%s', desc='%s', method='%s', url='%s', tags='%s', group='%s', priority=%d}",
+                this.caseId, this.desc, this.method, this.url, this.tags, this.group, this.priority);
     }
 }

@@ -1,332 +1,448 @@
-# API 自动化测试平台 - 项目分析报告
+# API自动化测试平台 - 项目分析报告
 
-## 一、项目概述
-
-**项目名称**: API 自动化测试平台（API Automation Testing Platform）
-**技术栈**: Spring Boot 3.2.1 + TestNG 7.8.0 + REST Assured 5.4.0 + Allure 2.25.0
-**Java版本**: Java 17
+> 更新日期: 2025-12-06
+> 版本: 3.0.0 (重构版)
 
 ---
 
-## 二、项目实现的具体功能
+## 目录
 
-### 2.1 核心功能
-
-| 功能模块 | 具体能力 |
-|---------|---------|
-| **多格式数据驱动** | 支持 JSON、YAML、CSV、Excel 格式的测试用例数据 |
-| **HTTP 请求执行** | 支持 GET/POST/PUT/DELETE 方法，支持 JSON/Form-data/文件上传 |
-| **参数化机制** | `${paramName}` 变量引用，跨用例参数传递 |
-| **动态函数** | `__random()` `__date()` `__md5()` 等内置函数动态生成数据 |
-| **响应验证** | JsonPath 表达式验证、包含验证、状态码验证 |
-| **数据提取** | 从响应中提取数据保存到公共池供后续用例使用 |
-| **测试报告** | Allure 现代化报告 + ExtentReports 传统报告 |
-| **失败重试** | 测试失败自动重试机制 |
-| **数据库断言** | 支持测试前后数据库验证 |
-| **多环境切换** | 支持 dev/test/prod 多环境配置 |
-
-### 2.2 内置函数列表
-
-| 函数 | 用途 | 示例 |
-|-----|------|------|
-| `__date(format)` | 日期格式化 | `__date(yyyy-MM-dd)` |
-| `__random(length,num)` | 随机字符串 | `__random(10,false)` |
-| `__md5(text)` | MD5 加密 | `__md5(password)` |
-| `__aes(text,key)` | AES 加密 | `__aes(data,secret)` |
-| `__rsa(text,key)` | RSA 加密 | `__rsa(data,publicKey)` |
-| `__plus(a,b)` | 加法运算 | `__plus(10,20)` |
-| `__sub(a,b)` | 减法运算 | `__sub(100,30)` |
-| `__multi(a,b)` | 乘法运算 | `__multi(5,10)` |
-| `__max(a,b)` | 最大值 | `__max(50,100)` |
-| `__bodyfile(path)` | 文件引用 | `__bodyfile(path/to/file)` |
+1. [项目概述](#1-项目概述)
+2. [重构更新日志](#2-重构更新日志)
+3. [功能清单与使用场景](#3-功能清单与使用场景)
+4. [技术栈](#4-技术栈)
+5. [项目架构](#5-项目架构)
+6. [核心类说明](#6-核心类说明)
+7. [配置说明](#7-配置说明)
+8. [断言语法](#8-断言语法)
+9. [使用指南](#9-使用指南)
 
 ---
 
-## 三、适用场景
+## 1. 项目概述
 
-| 场景 | 说明 |
-|-----|------|
-| **接口回归测试** | 每次发版前批量执行接口用例，确保功能正常 |
-| **接口冒烟测试** | 快速验证核心接口是否可用 |
-| **持续集成(CI/CD)** | 集成到 Jenkins/GitLab CI 中自动执行 |
-| **接口联调测试** | 前后端分离项目中验证后端接口 |
-| **Mock 测试** | 配合 WireMock 服务进行隔离测试 |
-| **性能基线测试** | 作为性能测试的基础用例库 |
-| **数据库集成测试** | 验证接口与数据库交互的正确性 |
-| **新人培训** | 作为接口测试入门学习项目 |
+本项目是一个基于Spring Boot的API自动化测试平台，采用数据驱动的测试方法。核心功能是从JSON/YAML/CSV/Excel文件中读取测试用例，自动执行HTTP请求并进行响应验证。
 
----
+### 核心特点
 
-## 四、技术栈
-
-| 层级 | 技术 | 版本 | 用途 |
-|-----|------|------|------|
-| **框架** | Spring Boot | 3.2.1 | 应用框架 |
-| **测试框架** | TestNG | 7.8.0 | 测试组织和执行 |
-| **HTTP 客户端** | REST Assured | 5.4.0 | API 请求发送 |
-| **JSON 处理** | Jackson | 2.16.1 | JSON 解析 |
-| **YAML 处理** | SnakeYAML | 2.2 | YAML 解析 |
-| **Excel 处理** | Apache POI | 5.2.5 | Excel 数据读取 |
-| **测试报告** | Allure | 2.25.0 | 现代化报告 |
-| **Mock 服务** | WireMock | 3.3.1 | 接口 Mock |
-| **数据库** | MySQL + MyBatis | 8.2.0 / 3.0.3 | 数据库访问 |
-| **日志** | Logback | - | 日志记录 |
-| **代码检查** | Checkstyle + SpotBugs | - | 代码质量 |
+- **统一架构**: 基于Spring Boot，移除遗留依赖
+- **数据驱动**: 测试用例与代码分离，支持多种数据格式
+- **增强断言**: 支持 =, !=, >, >=, <, <=, ~= 等多种运算符
+- **标签管理**: 支持测试用例标签和分组
+- **超时控制**: 可配置的HTTP超时参数
+- **现代报告**: 统一使用Allure报告
 
 ---
 
-## 五、架构模式
+## 2. 重构更新日志
 
-### 5.1 整体架构
+### V3.0.0 (2025-12-06) - 架构重构版
 
-```
-┌──────────────────────────────────────────────────────────┐
-│                    测试执行层                              │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐   │
-│  │ ApiTestModern│  │   ApiTest   │  │    TestBase     │   │
-│  │   (推荐)     │  │   (遗留)    │  │    (基类)       │   │
-│  └──────┬──────┘  └──────┬──────┘  └────────┬────────┘   │
-└─────────┼────────────────┼──────────────────┼────────────┘
-          │                │                  │
-┌─────────▼────────────────▼──────────────────▼────────────┐
-│                    工具层                                 │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐            │
-│  │RestAssured │ │FunctionUtil│ │ AssertUtil │            │
-│  │   Util     │ │ (动态函数) │ │  (断言)    │            │
-│  └────────────┘ └────────────┘ └────────────┘            │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐            │
-│  │  DbAssert  │ │ CryptoUtil │ │ MockUtil   │            │
-│  │ (数据库断言)│ │ (加密工具) │ │ (Mock工具) │            │
-│  └────────────┘ └────────────┘ └────────────┘            │
-└──────────────────────────────────────────────────────────┘
-          │
-┌─────────▼────────────────────────────────────────────────┐
-│                    数据层                                 │
-│  ┌────────────────────────────────────────────────────┐  │
-│  │              DataReaderFactory                      │  │
-│  │  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────────┐   │  │
-│  │  │  JSON  │ │  YAML  │ │  CSV   │ │   Excel    │   │  │
-│  │  │ Reader │ │ Reader │ │ Reader │ │   Util     │   │  │
-│  │  └────────┘ └────────┘ └────────┘ └────────────┘   │  │
-│  └────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────┘
-          │
-┌─────────▼────────────────────────────────────────────────┐
-│                    配置层                                 │
-│  ┌──────────────┐  ┌──────────────┐  ┌────────────────┐  │
-│  │ ApiProperties│  │ DbProperties │  │ EnvProperties  │  │
-│  │ (API配置)    │  │ (数据库配置)  │  │ (环境配置)     │  │
-│  └──────────────┘  └──────────────┘  └────────────────┘  │
-└──────────────────────────────────────────────────────────┘
-```
+#### 移除的内容
 
-### 5.2 设计模式
+| 项目 | 说明 |
+|------|------|
+| `ApiTest.java` | 移除遗留Excel测试类 |
+| `ExtentTestNGIReporterListener.java` | 移除ExtentReports监听器 |
+| `api-config.xml` | 移除XML配置，统一使用YAML |
+| `testng.xml` | 移除遗留TestNG配置 |
+| `RandomStrArrFucntion.java` | 修复为正确拼写 |
+| Guice依赖 | 移除，统一使用Spring |
+| ExtentReports依赖 | 移除，统一使用Allure |
 
-| 模式 | 应用场景 |
-|-----|---------|
-| **数据驱动模式** | 测试逻辑与测试数据分离 |
-| **工厂模式** | DataReaderFactory 统一数据读取 |
-| **策略模式** | 不同数据格式使用不同读取策略 |
-| **模板方法模式** | TestBase 定义测试流程骨架 |
-| **依赖注入** | Spring @Configuration 管理配置 |
+#### 新增的内容
+
+| 项目 | 说明 |
+|------|------|
+| `DataReader.java` | 统一的数据读取器接口 |
+| `RandomStrArrFunction.java` | 修正拼写的随机数组函数 |
+| `ApiTestException.java` | API测试异常基类 |
+| `ConfigurationException.java` | 配置异常类 |
+| `DataReadException.java` | 数据读取异常类 |
+| `VerificationException.java` | 验证异常类 |
+
+#### 增强的功能
+
+| 功能 | 说明 |
+|------|------|
+| **断言增强** | 支持 !=, >, >=, <, <=, ~=, :exist, :null, :in 等操作符 |
+| **超时控制** | 可配置connect/read/write超时 |
+| **标签管理** | ApiDataBean新增tags, group, priority字段 |
+| **配置统一** | 全部使用YAML配置 |
 
 ---
 
-## 六、目录结构
+## 3. 功能清单与使用场景
+
+### 3.1 HTTP请求功能
+
+| 功能 | 描述 | 使用场景 |
+|------|------|----------|
+| GET请求 | 支持查询参数 | 查询接口测试、资源获取 |
+| POST请求 | 支持JSON/Form-data | 创建资源、表单提交 |
+| PUT请求 | JSON请求体 | 更新资源 |
+| DELETE请求 | URL参数 | 删除资源 |
+| 文件上传 | Multipart | 文件上传接口测试 |
+| HTTPS支持 | SSL/TLS | 安全接口测试 |
+
+### 3.2 数据源支持
+
+| 格式 | 文件位置 | 推荐程度 |
+|------|----------|----------|
+| JSON | `data/*.json` | ★★★★★ 推荐 |
+| YAML | `data/*.yml` | ★★★★☆ |
+| CSV | `data/*.csv` | ★★★☆☆ |
+| Excel | `case/*.xls` | ★★☆☆☆ |
+
+### 3.3 动态函数 (14个)
+
+| 函数 | 语法 | 用途 |
+|------|------|------|
+| `__random` | `__random(8,true)` | 随机字符串 |
+| `__date` | `__date(yyyy-MM-dd)` | 日期格式化 |
+| `__md5` | `__md5(text)` | MD5哈希 |
+| `__base64` | `__base64(text)` | Base64编码 |
+| `__aes` | `__aes(data,key)` | AES加密 |
+| `__rsa` | `__rsa(data,pubkey)` | RSA加密 |
+| `__sha` | `__sha(text,SHA256)` | SHA哈希 |
+| `__plus` | `__plus(1,2,3)` | 加法 |
+| `__sub` | `__sub(10,3)` | 减法 |
+| `__multi` | `__multi(100,0.8)` | 乘法 |
+| `__max` | `__max(1,5,3)` | 最大值 |
+| `__randomText` | `__randomText(10)` | 中文随机文本 |
+| `__randomStrArr` | `__randomStrArr(3,8,true)` | 随机字符串数组 |
+
+---
+
+## 4. 技术栈
+
+### 4.1 核心框架
+
+| 组件 | 版本 | 说明 |
+|------|------|------|
+| Java | 17 | 编程语言 |
+| Spring Boot | 3.2.1 | 应用框架 |
+| TestNG | 7.8.0 | 测试框架 |
+| REST Assured | 5.4.0 | HTTP客户端 |
+| Maven | 3.x | 构建工具 |
+
+### 4.2 数据处理
+
+| 组件 | 版本 | 用途 |
+|------|------|------|
+| Jackson | 2.16.1 | JSON/YAML处理 |
+| Apache POI | 5.2.5 | Excel读写 |
+| Jayway JsonPath | 2.9.0 | JSON查询 |
+
+### 4.3 测试与报告
+
+| 组件 | 版本 | 用途 |
+|------|------|------|
+| Allure | 2.25.0 | 测试报告 |
+| WireMock | 3.3.1 | API Mock |
+| JUnit 5 | 5.10.1 | 单元测试 |
+
+### 4.4 已移除的依赖
+
+| 组件 | 原因 |
+|------|------|
+| ExtentReports | 统一使用Allure |
+| Google Guice | 统一使用Spring |
+| DOM4J | 不再需要解析XML配置 |
+
+---
+
+## 5. 项目架构
+
+### 5.1 目录结构
 
 ```
 autotest/
-├── src/
-│   ├── main/java/com/sen/api/
-│   │   ├── ApiTestApplication.java      # Spring Boot 启动类
-│   │   ├── beans/                       # 数据模型
-│   │   │   ├── ApiDataBean.java         # API测试数据Bean
-│   │   │   └── BaseBean.java            # 基础Bean
-│   │   ├── configs/                     # 配置类
-│   │   │   ├── ApiProperties.java       # API配置属性
-│   │   │   ├── ApiConfiguration.java    # API配置类
-│   │   │   └── EnvConfiguration.java    # 环境配置类
-│   │   ├── exceptions/                  # 异常类
-│   │   │   └── ErrorRespStatusException.java
-│   │   ├── functions/                   # 动态函数
-│   │   │   ├── Function.java            # 函数接口
-│   │   │   ├── DateFunction.java        # 日期函数
-│   │   │   ├── RandomFunction.java      # 随机函数
-│   │   │   ├── Md5Function.java         # MD5函数
-│   │   │   ├── AesFunction.java         # AES加密函数
-│   │   │   └── RsaFunction.java         # RSA加密函数
-│   │   ├── listeners/                   # 测试监听器
-│   │   │   ├── AutoTestListener.java
-│   │   │   └── RetryListener.java
-│   │   └── utils/                       # 工具类
-│   │       ├── RestAssuredUtil.java     # HTTP请求工具
-│   │       ├── JsonUtil.java            # JSON工具
-│   │       ├── StringUtil.java          # 字符串工具
-│   │       ├── DbAssertUtil.java        # 数据库断言工具
-│   │       ├── CryptoUtil.java          # 加密工具
-│   │       └── MockUtil.java            # Mock工具
-│   ├── main/resources/
-│   │   ├── application.yml              # 主配置
-│   │   ├── application-dev.yml          # 开发环境
-│   │   ├── application-test.yml         # 测试环境
-│   │   └── application-prod.yml         # 生产环境
-│   └── test/java/test/com/sen/api/
-│       ├── ApiTestModern.java           # 现代测试类
-│       ├── TestBase.java                # 测试基类
-│       └── unit/                        # 单元测试
-├── data/                                # 测试数据
+├── src/main/java/com/sen/api/
+│   ├── ApiTestApplication.java      # Spring Boot入口
+│   ├── beans/
+│   │   ├── ApiDataBean.java         # 测试数据Bean (含标签、分组、优先级)
+│   │   └── BaseBean.java
+│   ├── configs/
+│   │   ├── ApiConfig.java           # YAML配置加载
+│   │   ├── ApiConfiguration.java    # Spring配置
+│   │   └── ApiProperties.java       # 配置属性 (含超时配置)
+│   ├── exceptions/                  # 异常类
+│   │   ├── ApiTestException.java    # 基础异常
+│   │   ├── ConfigurationException.java
+│   │   ├── DataReadException.java
+│   │   ├── ErrorRespStatusException.java
+│   │   └── VerificationException.java
+│   ├── functions/                   # 动态函数 (14个)
+│   │   ├── Function.java            # 函数接口
+│   │   ├── RandomStrArrFunction.java # 修正拼写
+│   │   └── ...
+│   ├── listeners/                   # TestNG监听器
+│   │   ├── AutoTestListener.java
+│   │   ├── RetryListener.java
+│   │   └── TestngRetry.java
+│   └── utils/
+│       ├── DataReader.java          # 数据读取器接口
+│       ├── DataReaderFactory.java   # 数据源工厂
+│       ├── AssertUtil.java          # 增强版断言工具
+│       ├── RestAssuredUtil.java     # HTTP请求
+│       └── ...
+├── src/test/java/test/com/sen/api/
+│   ├── ApiTestModern.java          # 测试入口
+│   └── TestBase.java               # 测试基类
+├── data/                           # JSON/YAML测试数据
 │   ├── api-test-data.json
 │   └── api-test-data.yml
-├── testng-modern.xml                    # TestNG配置(并行)
-├── Dockerfile                           # Docker配置
-├── checkstyle.xml                       # 代码规范配置
-├── spotbugs-exclude.xml                 # SpotBugs排除配置
-└── pom.xml                              # Maven配置
+├── api-config.yml                  # API配置 (YAML)
+├── testng-modern.xml               # TestNG配置
+└── pom.xml                         # Maven配置
+```
+
+### 5.2 执行流程
+
+```
+┌─────────────────┐
+│  加载YAML配置    │  api-config.yml
+└────────┬────────┘
+         ↓
+┌─────────────────┐
+│  读取测试数据    │  JSON/YAML/CSV/Excel
+└────────┬────────┘
+         ↓
+┌─────────────────┐
+│  预处理参数      │  执行preParam函数
+└────────┬────────┘
+         ↓
+┌─────────────────┐
+│  参数替换        │  ${param} → 实际值
+└────────┬────────┘
+         ↓
+┌─────────────────┐
+│  发送HTTP请求   │  REST Assured
+└────────┬────────┘
+         ↓
+┌─────────────────┐
+│  验证响应       │  状态码 + 增强断言
+└────────┬────────┘
+         ↓
+┌─────────────────┐
+│  提取数据保存   │  save字段 → 参数池
+└────────┬────────┘
+         ↓
+┌─────────────────┐
+│  生成Allure报告 │
+└─────────────────┘
 ```
 
 ---
 
-## 七、配置说明
+## 6. 核心类说明
 
-### 7.1 多环境配置
+### 6.1 测试执行类
+
+| 类 | 功能 |
+|----|------|
+| `ApiTestModern` | 测试入口，使用JSON/YAML数据 |
+| `TestBase` | 参数替换、验证逻辑、数据提取 |
+
+### 6.2 数据模型
+
+**ApiDataBean 字段说明：**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| run | boolean | 是否执行 |
+| desc | String | 测试描述 |
+| url | String | 请求URL |
+| method | String | HTTP方法 |
+| param | String | 请求参数(JSON) |
+| status | int | 预期状态码 |
+| verify | String | 验证表达式 |
+| save | String | 数据提取 |
+| preParam | String | 前置参数 |
+| sleep | int | 等待秒数 |
+| preSql | String | 前置SQL |
+| postSql | String | 后置SQL |
+| dbVerify | String | 数据库验证 |
+| dependsOn | String | 依赖用例 |
+| **tags** | String | 标签(逗号分隔) |
+| **group** | String | 分组 |
+| **priority** | int | 优先级(1-5) |
+
+### 6.3 异常类
+
+| 类 | 说明 |
+|----|------|
+| `ApiTestException` | API测试异常基类 |
+| `ConfigurationException` | 配置文件异常 |
+| `DataReadException` | 数据读取异常 |
+| `VerificationException` | 验证失败异常 |
+| `ErrorRespStatusException` | HTTP状态码异常 |
+
+---
+
+## 7. 配置说明
+
+### 7.1 api-config.yml
 
 ```yaml
-# application.yml
-spring:
-  profiles:
-    active: ${ENV:dev}  # 默认开发环境
-
-# 通过命令行切换环境
-mvn test -Dspring.profiles.active=test
-mvn test -Dspring.profiles.active=prod
-```
-
-### 7.2 数据库配置
-
-```yaml
-# application-dev.yml
 api:
-  db:
-    enabled: true
-    url: jdbc:mysql://localhost:3306/test_dev
-    username: root
-    password: 123456
+  rootUrl: https://api.example.com
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  params:
+    test_env: production
+
+project:
+  name: API自动化测试平台
+  version: 3.0
 ```
 
-### 7.3 TestNG 并行配置
+### 7.2 application.yml (超时配置)
 
-```xml
-<suite name="API Test Suite" parallel="methods" thread-count="5">
-    <test name="API Tests">
-        <classes>
-            <class name="test.com.sen.api.ApiTestModern"/>
-        </classes>
-    </test>
-</suite>
+```yaml
+api:
+  test:
+    timeout:
+      connect: 5000      # 连接超时 5秒
+      read: 30000        # 读取超时 30秒
+      write: 30000       # 写入超时 30秒
+      connection-request: 5000  # 连接池超时 5秒
 ```
 
 ---
 
-## 八、使用指南
+## 8. 断言语法
 
-### 8.1 基本命令
+### 8.1 支持的操作符
+
+| 操作符 | 说明 | 示例 |
+|--------|------|------|
+| `=` / `==` | 相等 | `$.code=0` |
+| `!=` / `<>` | 不相等 | `$.code!=1` |
+| `>` | 大于 | `$.count>0` |
+| `>=` | 大于等于 | `$.count>=1` |
+| `<` | 小于 | `$.count<100` |
+| `<=` | 小于等于 | `$.count<=50` |
+| `~=` | 正则匹配 | `$.name~=^test.*` |
+| `:exist` | 字段存在 | `$.id:exist` |
+| `:null` | 字段为null | `$.deleted:null` |
+| `:notNull` | 字段不为null | `$.id:notNull` |
+| `:empty` | 字段为空 | `$.name:empty` |
+| `:notEmpty` | 字段不为空 | `$.name:notEmpty` |
+| `:in` | 在列表中 | `$.type:in[A,B,C]` |
+| `:notIn` | 不在列表中 | `$.type:notIn[X,Y]` |
+
+### 8.2 使用示例
+
+```json
+{
+  "verify": "$.code=0;$.data.id>0;$.data.name~=^test.*;$.data.type:in[A,B,C]"
+}
+```
+
+---
+
+## 9. 使用指南
+
+### 9.1 基本命令
 
 ```bash
 # 编译项目
 mvn clean compile
 
-# 运行测试（默认开发环境）
+# 运行所有测试
 mvn clean test
 
+# 运行单个测试类
+mvn clean test -Dtest=ApiTestModern
+
 # 指定环境运行
-mvn clean test -Dspring.profiles.active=test
+mvn clean test -Dspring.profiles.active=prod
 
-# 生成报告
+# 生成Allure报告
+mvn allure:report
 allure serve target/allure-results
-
-# Docker 运行
-docker build -t api-test .
-docker run api-test
 ```
 
-### 8.2 测试数据示例
+### 9.2 测试数据示例 (JSON)
 
 ```json
-{
-  "run": true,
-  "desc": "创建用户",
-  "url": "/users",
-  "method": "POST",
-  "param": "{\"name\":\"${userName}\",\"email\":\"test@example.com\"}",
-  "verify": "$.id!=null;$.name=${userName}",
-  "save": "userId=$.id",
-  "preSql": "DELETE FROM users WHERE email='test@example.com'",
-  "postSql": "SELECT * FROM users WHERE id=${userId}",
-  "dbVerify": "$.name=${userName}"
-}
+[
+  {
+    "run": true,
+    "desc": "获取用户列表",
+    "url": "/users",
+    "method": "GET",
+    "status": 200,
+    "verify": "$[0].id>0;$[0].name:notEmpty",
+    "save": "firstUserId=$[0].id",
+    "tags": "smoke,user,P0",
+    "group": "user-api",
+    "priority": 1
+  },
+  {
+    "run": true,
+    "desc": "创建新用户",
+    "url": "/users",
+    "method": "POST",
+    "preParam": "randomEmail=__random(8)@test.com",
+    "param": "{\"name\":\"Test\",\"email\":\"${randomEmail}\"}",
+    "status": 201,
+    "verify": "$.name=Test;$.id>0",
+    "save": "newUserId=$.id",
+    "tags": "smoke,user,P0",
+    "group": "user-api",
+    "priority": 1
+  }
+]
+```
+
+### 9.3 测试数据示例 (YAML)
+
+```yaml
+- run: true
+  desc: 获取用户列表
+  url: /users
+  method: GET
+  status: 200
+  verify: "$[0].id>0;$[0].name:notEmpty"
+  save: "firstUserId=$[0].id"
+  tags: "smoke,user,P0"
+  group: "user-api"
+  priority: 1
+
+- run: true
+  desc: 创建新用户
+  url: /users
+  method: POST
+  preParam: "randomEmail=__random(8)@test.com"
+  param: '{"name":"Test","email":"${randomEmail}"}'
+  status: 201
+  verify: "$.name=Test;$.id>0"
+  save: "newUserId=$.id"
+  tags: "smoke,user,P0"
+  group: "user-api"
+  priority: 1
 ```
 
 ---
 
-## 九、扩展开发
+## 总结
 
-### 9.1 自定义函数
+### V3.0.0 版本改进总结
 
-```java
-@Component
-public class CustomFunction implements Function {
-    @Override
-    public String execute(String[] args) {
-        // 实现自定义逻辑
-        return result;
-    }
-
-    @Override
-    public String getReferenceKey() {
-        return "custom";  // 使用 __custom(args) 调用
-    }
-}
-```
-
-### 9.2 自定义数据读取器
-
-```java
-@Component
-public class CustomDataReader implements DataReader {
-    @Override
-    public List<ApiDataBean> read(String path) {
-        // 实现读取逻辑
-    }
-
-    @Override
-    public boolean supports(String path) {
-        return path.endsWith(".custom");
-    }
-}
-```
+1. **架构统一**: 移除遗留代码，全面使用Spring Boot
+2. **配置统一**: 废弃XML，统一使用YAML配置
+3. **报告统一**: 移除ExtentReports，统一使用Allure
+4. **断言增强**: 支持12种操作符（=, !=, >, >=, <, <=, ~=, :exist, :null, :in等）
+5. **超时控制**: 可配置HTTP连接/读取/写入超时
+6. **标签管理**: 支持测试用例标签、分组、优先级
+7. **异常处理**: 完善的异常类层次结构
+8. **代码质量**: 修复拼写错误，统一代码风格
 
 ---
 
-## 十、版本历史
-
-| 版本 | 日期 | 更新内容 |
-|-----|------|---------|
-| v2.1 | 2025-12 | 移除FastJSON，统一Jackson；添加数据库断言；多环境支持 |
-| v2.0 | 2025-xx | 现代化重构，支持JSON/YAML数据源 |
-| v1.0 | 2025-xx | 初始版本，Excel数据驱动 |
-
----
-
-## 十一、贡献指南
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
-
----
-
-## 十二、许可证
-
-MIT License
+> 报告更新时间: 2025-12-06
+> 版本: 3.0.0

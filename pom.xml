@@ -25,7 +25,7 @@
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <envName>api-config.xml</envName>
+        <envName>api-config.yml</envName>
         <!-- 默认使用现代化配置 -->
         <xmlFileName>testng-modern.xml</xmlFileName>
 
@@ -176,12 +176,7 @@
             <version>${allure.version}</version>
         </dependency>
 
-        <!-- ExtentReports (kept for backward compatibility) -->
-        <dependency>
-            <groupId>com.aventstack</groupId>
-            <artifactId>extentreports</artifactId>
-            <version>5.1.1</version>
-        </dependency>
+        <!-- ExtentReports 已移除，统一使用 Allure -->
 
         <!-- SLF4J + Logback for logging -->
         <dependency>
@@ -215,12 +210,7 @@
             <version>5.2.5</version>
         </dependency>
 
-        <!-- Google Guice (kept for dependency injection) -->
-        <dependency>
-            <groupId>com.google.inject</groupId>
-            <artifactId>guice</artifactId>
-            <version>5.1.0</version>
-        </dependency>
+        <!-- Guice 已移除，统一使用 Spring 依赖注入 -->
 
         <!-- Lombok (optional, for cleaner code) -->
         <dependency>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="API自动化测试套件 - 现代化版本" verbose="1" parallel="methods" thread-count="5">
+<suite name="API自动化测试套件" verbose="1" parallel="methods" thread-count="5">
 
-    <!-- 使用现代化的测试类 -->
+    <!-- 使用YAML配置和JSON数据源 -->
     <test name="API测试 - JSON数据源" preserve-order="true">
-        <parameter name="envName" value="api-config.xml"/>
+        <parameter name="envName" value="api-config.yml"/>
         <parameter name="dataPath" value="data/api-test-data.json"/>
         <parameter name="dataFormat" value="json"/>
         <classes>
@@ -15,7 +15,7 @@
     <!-- 可选：使用YAML数据源 -->
     <!--
     <test name="API测试 - YAML数据源" preserve-order="true">
-        <parameter name="envName" value="api-config.xml"/>
+        <parameter name="envName" value="api-config.yml"/>
         <parameter name="dataPath" value="data/api-test-data.yml"/>
         <parameter name="dataFormat" value="yaml"/>
         <classes>
@@ -24,7 +24,7 @@
     </test>
     -->
 
-    <!-- 监听器配置 -->
+    <!-- Allure报告监听器 + 测试控制监听器 -->
     <listeners>
         <listener class-name="com.sen.api.listeners.AutoTestListener"/>
         <listener class-name="com.sen.api.listeners.RetryListener"/>

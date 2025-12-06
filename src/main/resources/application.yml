@@ -33,6 +33,7 @@ logging:
 # API测试通用配置
 api:
   project-name: API自动化测试平台
+  root-url: ${API_BASE_URL:https://jsonplaceholder.typicode.com}
   headers:
     Content-Type: application/json
     Accept: application/json
@@ -44,7 +45,18 @@ api:
     timeout-seconds: 60
     data-path: data/api-test-data.json
     data-format: json
+    # HTTP超时配置（毫秒）
+    timeout:
+      connect: 5000
+      read: 30000
+      write: 30000
+      connection-request: 5000
   mock:
     enabled: false
     port: 8089
     host: localhost
+  database:
+    enabled: false
+    url: jdbc:mysql://localhost:3306/test
+    username: root
+    password: 123456
