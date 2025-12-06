@@ -1,0 +1,25 @@
+# 开发环境配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/test_dev?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+
+# API配置 - 开发环境
+api:
+  root-url: https://jsonplaceholder.typicode.com
+  project-name: API自动化测试平台 - 开发环境
+  database:
+    enabled: true
+    url: jdbc:mysql://localhost:3306/test_dev?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+  mock:
+    enabled: true
+    port: 8089
+
+logging:
+  level:
+    com.sen.api: DEBUG
+    io.restassured: DEBUG

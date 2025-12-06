@@ -1,0 +1,31 @@
+# 生产环境配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://prod-db.example.com:3306/api_prod?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME:prod_user}
+    password: ${DB_PASSWORD}
+
+# API配置 - 生产环境
+api:
+  root-url: https://api.example.com
+  project-name: API自动化测试平台 - 生产环境
+  database:
+    enabled: true
+    url: jdbc:mysql://prod-db.example.com:3306/api_prod?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai
+    username: ${DB_USERNAME:prod_user}
+    password: ${DB_PASSWORD}
+  mock:
+    enabled: false
+  test:
+    parallel-threads: 20
+    retry-count: 1
+    timeout-seconds: 30
+
+logging:
+  level:
+    root: WARN
+    com.sen.api: INFO
+    io.restassured: ERROR
+  file:
+    name: /var/log/api-test/api-test.log

@@ -6,11 +6,8 @@ server:
 spring:
   application:
     name: api-test-platform
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root
-    password: 123456
+  profiles:
+    active: ${ENV:dev}
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
@@ -33,11 +30,21 @@ logging:
   file:
     name: logs/api-test.log
 
-# 自定义配置
+# API测试通用配置
 api:
-  config:
-    file: api-config.xml
-  testng:
-    suite: testng.xml
-  report:
-    path: target/test-output
+  project-name: API自动化测试平台
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  params:
+    test_env: ${spring.profiles.active}
+  test:
+    parallel-threads: 5
+    retry-count: 2
+    timeout-seconds: 60
+    data-path: data/api-test-data.json
+    data-format: json
+  mock:
+    enabled: false
+    port: 8089
+    host: localhost

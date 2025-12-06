@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="API自动化测试套件 - 现代化版本" verbose="1">
+<suite name="API自动化测试套件 - 现代化版本" verbose="1" parallel="methods" thread-count="5">
 
     <!-- 使用现代化的测试类 -->
     <test name="API测试 - JSON数据源" preserve-order="true">
@@ -24,11 +24,10 @@
     </test>
     -->
 
-    <!-- 监听器配置 - 移除ExtentReports监听器 -->
+    <!-- 监听器配置 -->
     <listeners>
         <listener class-name="com.sen.api.listeners.AutoTestListener"/>
         <listener class-name="com.sen.api.listeners.RetryListener"/>
-        <!-- ExtentReports监听器已移除，使用Allure Report -->
     </listeners>
 
 </suite>

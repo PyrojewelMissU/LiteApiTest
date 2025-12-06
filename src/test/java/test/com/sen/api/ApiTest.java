@@ -2,7 +2,7 @@ package test.com.sen.api;
 
 import com.sen.api.beans.ApiDataBean;
 import com.sen.api.configs.ApiConfig;
-import com.sen.api.excepions.ErrorRespStatusException;
+import com.sen.api.exceptions.ErrorRespStatusException;
 import com.sen.api.listeners.AutoTestListener;
 import com.sen.api.listeners.RetryListener;
 import com.sen.api.utils.*;

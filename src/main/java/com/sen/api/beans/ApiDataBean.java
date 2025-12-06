@@ -1,111 +1,251 @@
 package com.sen.api.beans;
 
+/**
+ * API测试数据Bean
+ * 包含测试用例的所有配置信息
+ */
 public class ApiDataBean extends BaseBean {
-	private boolean run;
-	private String desc; // 接口描述
-	private String url;
-	private String method;
-	private String param;
-	private boolean contains;
-	private int status;
-	private String verify;
-	private String save;
-	private String preParam;
-	private int sleep;
 
-	public boolean isRun() {
-		return run;
-	}
+    // ==================== 基础字段 ====================
 
-	public void setRun(boolean run) {
-		this.run = run;
-	}
+    /**
+     * 是否执行该用例
+     */
+    private boolean run;
 
-	public String getDesc() {
-		return desc;
-	}
+    /**
+     * 接口描述
+     */
+    private String desc;
 
-	public void setDesc(String desc) {
-		this.desc = desc;
-	}
+    /**
+     * 接口URL（支持相对路径和绝对路径）
+     */
+    private String url;
 
-	public String getUrl() {
-		return url;
-	}
+    /**
+     * HTTP请求方法（GET/POST/PUT/DELETE/UPLOAD）
+     */
+    private String method;
 
-	public void setUrl(String url) {
-		this.url = url;
-	}
+    /**
+     * 请求参数（JSON格式）
+     */
+    private String param;
 
-	public String getMethod() {
-		return method;
-	}
+    /**
+     * 验证方式：true-包含验证，false-精确验证
+     */
+    private boolean contains;
 
-	public void setMethod(String method) {
-		this.method = method;
-	}
+    /**
+     * 预期HTTP状态码（0表示不验证）
+     */
+    private int status;
 
-	public String getParam() {
-		return param;
-	}
+    /**
+     * 响应验证表达式（JsonPath格式）
+     * 格式: $.id=1;$.name=test
+     */
+    private String verify;
 
-	public void setParam(String param) {
-		this.param = param;
-	}
+    /**
+     * 保存响应数据到公共参数池
+     * 格式: userId=$.id;userName=$.name
+     */
+    private String save;
 
-	public boolean isContains() {
-		return contains;
-	}
+    /**
+     * 前置参数（函数生成）
+     * 格式: randomId=__random(8,true);currentDate=__date(yyyy-MM-dd)
+     */
+    private String preParam;
 
-	public void setContains(boolean contains) {
-		this.contains = contains;
-	}
-	
-	public int getStatus() {
-		return status;
-	}
+    /**
+     * 执行前等待时间（秒）
+     */
+    private int sleep;
 
-	public void setStatus(int status) {
-		this.status = status;
-	}
+    // ==================== 数据库相关字段 ====================
 
-	public String getVerify() {
-		return verify;
-	}
+    /**
+     * 前置SQL（测试执行前执行）
+     * 用于准备测试数据或清理数据
+     * 多条SQL用分号分隔
+     */
+    private String preSql;
 
-	public void setVerify(String verify) {
-		this.verify = verify;
-	}
+    /**
+     * 后置SQL（测试执行后执行）
+     * 用于清理测试数据
+     * 多条SQL用分号分隔
+     */
+    private String postSql;
 
-	public String getSave() {
-		return save;
-	}
+    /**
+     * 数据库验证表达式
+     * 格式: $.fieldName=expectedValue;$.fieldName2=expectedValue2
+     */
+    private String dbVerify;
 
-	public void setSave(String save) {
-		this.save = save;
-	}
+    /**
+     * 数据库验证SQL（用于dbVerify的查询）
+     */
+    private String dbSql;
 
-	public String getPreParam() {
-		return preParam;
-	}
+    // ==================== 接口依赖相关字段 ====================
 
-	public void setPreParam(String preParam) {
-		this.preParam = preParam;
-	}
+    /**
+     * 依赖的接口ID列表（逗号分隔）
+     */
+    private String dependsOn;
 
-	public int getSleep() {
-		return sleep;
-	}
+    /**
+     * 当前接口ID（用于依赖链管理）
+     */
+    private String caseId;
 
-	public void setSleep(int sleep) {
-		this.sleep = sleep;
-	}
+    // ==================== Getters and Setters ====================
 
-	@Override
-	public String toString() {
-		// TODO Auto-generated method stub
-		return String.format("desc:%s,method:%s,url:%s,param:%s", this.desc,
-				this.method, this.url, this.param);
-	}
+    public boolean isRun() {
+        return run;
+    }
 
+    public void setRun(boolean run) {
+        this.run = run;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public String getParam() {
+        return param;
+    }
+
+    public void setParam(String param) {
+        this.param = param;
+    }
+
+    public boolean isContains() {
+        return contains;
+    }
+
+    public void setContains(boolean contains) {
+        this.contains = contains;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public String getVerify() {
+        return verify;
+    }
+
+    public void setVerify(String verify) {
+        this.verify = verify;
+    }
+
+    public String getSave() {
+        return save;
+    }
+
+    public void setSave(String save) {
+        this.save = save;
+    }
+
+    public String getPreParam() {
+        return preParam;
+    }
+
+    public void setPreParam(String preParam) {
+        this.preParam = preParam;
+    }
+
+    public int getSleep() {
+        return sleep;
+    }
+
+    public void setSleep(int sleep) {
+        this.sleep = sleep;
+    }
+
+    public String getPreSql() {
+        return preSql;
+    }
+
+    public void setPreSql(String preSql) {
+        this.preSql = preSql;
+    }
+
+    public String getPostSql() {
+        return postSql;
+    }
+
+    public void setPostSql(String postSql) {
+        this.postSql = postSql;
+    }
+
+    public String getDbVerify() {
+        return dbVerify;
+    }
+
+    public void setDbVerify(String dbVerify) {
+        this.dbVerify = dbVerify;
+    }
+
+    public String getDbSql() {
+        return dbSql;
+    }
+
+    public void setDbSql(String dbSql) {
+        this.dbSql = dbSql;
+    }
+
+    public String getDependsOn() {
+        return dependsOn;
+    }
+
+    public void setDependsOn(String dependsOn) {
+        this.dependsOn = dependsOn;
+    }
+
+    public String getCaseId() {
+        return caseId;
+    }
+
+    public void setCaseId(String caseId) {
+        this.caseId = caseId;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ApiDataBean{caseId='%s', desc='%s', method='%s', url='%s'}",
+                this.caseId, this.desc, this.method, this.url);
+    }
 }

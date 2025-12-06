@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- SpotBugs排除配置 -->
+
+    <!-- 排除测试类 -->
+    <Match>
+        <Source name="~.*Test\.java"/>
+    </Match>
+
+    <!-- 排除生成的代码 -->
+    <Match>
+        <Source name="~.*Generated.*\.java"/>
+    </Match>
+
+    <!-- 排除特定的Bug类型 -->
+    <!-- 序列化相关 -->
+    <Match>
+        <Bug pattern="SE_NO_SERIALVERSIONID"/>
+    </Match>
+
+    <!-- 忽略工具类中的空构造函数警告 -->
+    <Match>
+        <Class name="~com\.sen\.api\.utils\..*Util"/>
+        <Bug pattern="UPM_UNCALLED_PRIVATE_METHOD"/>
+    </Match>
+
+    <!-- 忽略配置类中的警告 -->
+    <Match>
+        <Package name="~com\.sen\.api\.configs.*"/>
+        <Bug pattern="URF_UNREAD_FIELD"/>
+    </Match>
+
+    <!-- 忽略Bean类中的未使用字段警告 -->
+    <Match>
+        <Package name="~com\.sen\.api\.beans.*"/>
+        <Bug pattern="URF_UNREAD_FIELD"/>
+    </Match>
+
+    <!-- 忽略异常类中的特定警告 -->
+    <Match>
+        <Package name="~com\.sen\.api\.exceptions.*"/>
+        <Bug pattern="SE_BAD_FIELD"/>
+    </Match>
+</FindBugsFilter>

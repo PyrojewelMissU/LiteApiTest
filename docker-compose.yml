@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # API测试服务
+  api-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api-test-platform
+    environment:
+      - ENV=test
+      - JAVA_OPTS=-Xms512m -Xmx1024m
+      - TZ=Asia/Shanghai
+    volumes:
+      - ./data:/app/data
+      - ./case:/app/case
+      - ./target/allure-results:/app/target/allure-results
+      - ./logs:/app/logs
+    ports:
+      - "8080:8080"
+    networks:
+      - api-test-network
+    depends_on:
+      - mysql
+      - wiremock
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api-test/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: api-test-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=test
+      - TZ=Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+    networks:
+      - api-test-network
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  # WireMock服务
+  wiremock:
+    image: wiremock/wiremock:latest
+    container_name: api-test-wiremock
+    ports:
+      - "8089:8080"
+    volumes:
+      - ./wiremock:/home/wiremock
+    networks:
+      - api-test-network
+    command: --verbose
+
+  # Allure报告服务
+  allure:
+    image: frankescobar/allure-docker-service:latest
+    container_name: api-test-allure
+    environment:
+      - CHECK_RESULTS_EVERY_SECONDS=3
+      - KEEP_HISTORY=1
+    volumes:
+      - ./target/allure-results:/app/allure-results
+      - ./target/allure-reports:/app/default-reports
+    ports:
+      - "5050:5050"
+    networks:
+      - api-test-network
+
+networks:
+  api-test-network:
+    driver: bridge
+
+volumes:
+  mysql-data:

@@ -1,9 +1,12 @@
 package com.sen.api.utils;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -16,6 +19,9 @@ import java.util.List;
 import java.util.Map;
 
 public class ExcelUtil {
+
+	private static final Logger logger = LoggerFactory.getLogger(ExcelUtil.class);
+	private static final ObjectMapper objectMapper = new ObjectMapper();
 
 	/**
 	 * 获取excel表所有sheet数据
@@ -173,9 +179,13 @@ public class ExcelUtil {
 					|| boolean.class.equals(param)) {
 				method.invoke(obj, Boolean.valueOf(value.toString())
 						|| value.toString().toLowerCase().equals("y"));
-			} else if (JSONObject.class.equals(param)
-					|| JSONObject.class.equals(param)) {
-				method.invoke(obj, JSONObject.parseObject(value.toString()));
+			} else if (JsonNode.class.equals(param)) {
+				try {
+					method.invoke(obj, objectMapper.readTree(value.toString()));
+				} catch (Exception e) {
+					logger.warn("Failed to parse JSON value: {}", value, e);
+					method.invoke(obj, objectMapper.createObjectNode());
+				}
 			}else {
 				// Date
 				method.invoke(obj, value);

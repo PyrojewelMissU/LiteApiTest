@@ -1,0 +1,27 @@
+# 测试环境配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://test-db.example.com:3306/test_qa?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: test_user
+    password: ${DB_PASSWORD:test123}
+
+# API配置 - 测试环境
+api:
+  root-url: https://api-test.example.com
+  project-name: API自动化测试平台 - 测试环境
+  database:
+    enabled: true
+    url: jdbc:mysql://test-db.example.com:3306/test_qa?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: test_user
+    password: ${DB_PASSWORD:test123}
+  mock:
+    enabled: false
+  test:
+    parallel-threads: 10
+    retry-count: 3
+
+logging:
+  level:
+    com.sen.api: INFO
+    io.restassured: WARN

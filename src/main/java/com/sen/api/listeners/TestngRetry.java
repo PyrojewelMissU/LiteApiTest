@@ -4,7 +4,7 @@ import org.testng.IRetryAnalyzer;
 import org.testng.ITestResult;
 import org.testng.Reporter;
 
-import com.sen.api.excepions.ErrorRespStatusException;
+import com.sen.api.exceptions.ErrorRespStatusException;
 
 
 public class TestngRetry implements IRetryAnalyzer {
