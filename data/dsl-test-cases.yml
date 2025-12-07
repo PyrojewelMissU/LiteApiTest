@@ -1,0 +1,148 @@
+# DSL测试用例示例
+# 让QA不用写Java就能写用例
+
+# 示例1：简单GET请求
+- name: 获取用户列表
+  description: 获取所有用户信息
+  api: /users
+  method: GET
+  tags:
+    - smoke
+    - P0
+  validate:
+    - status: 200
+  save:
+    firstUserId: $[0].id
+    firstUserName: $[0].name
+
+# 示例2：带参数的GET请求
+- name: 获取指定用户
+  description: 根据ID获取用户详情
+  api: /users/${firstUserId}
+  method: GET
+  validate:
+    - status: 200
+    - $.id: ${firstUserId}
+    - $.name: notEmpty
+  save:
+    userEmail: $.email
+
+# 示例3：POST请求创建资源
+- name: 创建新用户
+  description: 创建一个新用户
+  api: /users
+  method: POST
+  preParam:
+    randomName: __random(8)
+  body:
+    name: TestUser_${randomName}
+    username: testuser
+    email: test@example.com
+    phone: "1234567890"
+  validate:
+    - status: 201
+    - $.name: notNull
+  save:
+    newUserId: $.id
+
+# 示例4：PUT请求更新资源
+- name: 更新用户信息
+  description: 更新已创建的用户
+  api: /users/${newUserId}
+  method: PUT
+  body:
+    name: UpdatedUser
+    email: updated@example.com
+  validate:
+    - status: 200
+
+# 示例5：带重试的请求
+- name: 带重试的请求
+  api: /posts/1
+  method: GET
+  retry: 2
+  validate:
+    - status: 200
+    - $.id: 1
+
+# 示例6：带延迟的请求
+- name: 延迟执行的请求
+  api: /posts/1
+  method: GET
+  sleep: 1
+  validate:
+    - status: 200
+
+# 示例7：带自定义Header的请求
+- name: 自定义Header请求
+  api: /posts
+  method: GET
+  headers:
+    X-Custom-Header: custom-value
+    X-Request-Id: __random(16)
+  validate:
+    - status: 200
+
+# 示例8：使用账号Token
+- name: 使用管理员账号请求
+  api: /users
+  method: GET
+  account: admin
+  validate:
+    - status: 200
+
+# 示例9：条件跳过
+- name: 跳过的测试用例
+  api: /skip-this
+  method: GET
+  skip: true
+  validate:
+    - status: 200
+
+# 示例10：带依赖的请求
+- name: 依赖其他用例的请求
+  api: /users/${firstUserId}/posts
+  method: GET
+  dependsOn: 获取用户列表
+  validate:
+    - status: 200
+
+# 示例11：高级验证
+- name: 高级验证示例
+  api: /posts
+  method: GET
+  validate:
+    - status: 200
+    - $.length(): ">0"           # 数组长度大于0
+    - $[0].id: notNull          # 第一个元素id不为空
+    - $[0].title: notEmpty      # 第一个元素title不为空字符串
+
+# 示例12：流程测试（登录->操作->验证）
+- name: 模拟登录流程
+  api: /posts
+  method: POST
+  preParam:
+    timestamp: __date(yyyyMMddHHmmss)
+  body:
+    title: 测试标题_${timestamp}
+    body: 这是测试内容
+    userId: 1
+  validate:
+    - status: 201
+    - $.title: ~=^测试标题_.*
+  save:
+    postId: $.id
+
+- name: 验证创建的文章
+  api: /posts/${postId}
+  method: GET
+  validate:
+    - status: 200
+    - $.id: ${postId}
+
+# 示例13：DELETE请求
+- name: 删除文章
+  api: /posts/${postId}
+  method: DELETE
+  validate:
+    - status: 200

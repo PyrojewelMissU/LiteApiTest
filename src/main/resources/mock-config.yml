@@ -1,0 +1,98 @@
+# Mock配置文件示例
+# 用于模拟接口响应
+
+mocks:
+  # 基本Mock - GET请求
+  - url: /api/users
+    method: GET
+    status: 200
+    response: |
+      {
+        "code": 0,
+        "data": [
+          {"id": 1, "name": "张三", "email": "zhangsan@example.com"},
+          {"id": 2, "name": "李四", "email": "lisi@example.com"}
+        ]
+      }
+
+  # 带延迟的Mock - 模拟慢接口
+  - url: /api/slow-endpoint
+    method: GET
+    status: 200
+    delay: 3000
+    response: |
+      {"code": 0, "message": "This response was delayed"}
+
+  # POST请求Mock
+  - url: /api/users
+    method: POST
+    status: 201
+    response: |
+      {"code": 0, "data": {"id": 100, "message": "User created"}}
+
+  # 模拟登录接口
+  - url: /api/auth/login
+    method: POST
+    status: 200
+    response: |
+      {
+        "code": 0,
+        "data": {
+          "accessToken": "mock_access_token_12345",
+          "refreshToken": "mock_refresh_token_67890",
+          "expiresIn": 7200
+        }
+      }
+
+  # 模拟未开发接口
+  - url: /api/new-feature
+    method: GET
+    status: 501
+    response: |
+      {"code": 501, "message": "Not Implemented", "dev_status": "in_progress"}
+
+  # 模拟错误响应
+  - url: /api/error-test
+    method: GET
+    status: 500
+    response: |
+      {"code": 500, "message": "Internal Server Error"}
+
+  # 模拟认证失败
+  - url: /api/protected
+    method: GET
+    status: 401
+    response: |
+      {"code": 401, "message": "Unauthorized"}
+
+# AB实验配置
+ab_experiments:
+  - name: new_feature_test
+    url: /api/feature
+    strategy: weighted
+    variants:
+      - name: control
+        weight: 70
+        status: 200
+        response: |
+          {"code": 0, "version": "A", "feature_enabled": false}
+      - name: treatment
+        weight: 30
+        status: 200
+        response: |
+          {"code": 0, "version": "B", "feature_enabled": true}
+
+  - name: ui_experiment
+    url: /api/ui-config
+    strategy: round_robin
+    variants:
+      - name: old_ui
+        weight: 50
+        status: 200
+        response: |
+          {"theme": "classic", "layout": "standard"}
+      - name: new_ui
+        weight: 50
+        status: 200
+        response: |
+          {"theme": "modern", "layout": "fluid"}

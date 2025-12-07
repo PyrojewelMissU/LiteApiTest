@@ -1,21 +1,22 @@
 # API自动化测试平台 - 项目分析报告
 
-> 更新日期: 2025-12-06
-> 版本: 3.0.0 (重构版)
+> 更新日期: 2025-12-07
+> 版本: 3.1.0 (功能增强版)
 
 ---
 
 ## 目录
 
 1. [项目概述](#1-项目概述)
-2. [重构更新日志](#2-重构更新日志)
-3. [功能清单与使用场景](#3-功能清单与使用场景)
-4. [技术栈](#4-技术栈)
-5. [项目架构](#5-项目架构)
-6. [核心类说明](#6-核心类说明)
-7. [配置说明](#7-配置说明)
-8. [断言语法](#8-断言语法)
-9. [使用指南](#9-使用指南)
+2. [V3.1.0 新增功能](#2-v310-新增功能)
+3. [重构更新日志](#3-重构更新日志)
+4. [功能清单与使用场景](#4-功能清单与使用场景)
+5. [技术栈](#5-技术栈)
+6. [项目架构](#6-项目架构)
+7. [核心类说明](#7-核心类说明)
+8. [配置说明](#8-配置说明)
+9. [断言语法](#9-断言语法)
+10. [使用指南](#10-使用指南)
 
 ---
 
@@ -28,13 +29,214 @@
 - **统一架构**: 基于Spring Boot，移除遗留依赖
 - **数据驱动**: 测试用例与代码分离，支持多种数据格式
 - **增强断言**: 支持 =, !=, >, >=, <, <=, ~= 等多种运算符
-- **标签管理**: 支持测试用例标签和分组
-- **超时控制**: 可配置的HTTP超时参数
+- **多环境管理**: 支持 dev/test/stage/prod 环境切换
+- **Token自动化**: Token自动获取与刷新机制
+- **API调用链**: 支持复杂业务流程自动化
+- **YAML DSL**: QA无需写Java即可编写用例
+- **Mock增强**: 支持异常场景、AB实验等高级Mock
 - **现代报告**: 统一使用Allure报告
 
 ---
 
-## 2. 重构更新日志
+## 2. V3.1.0 新增功能
+
+### 2.1 多环境管理（ENV Center）
+
+**文件位置**: `src/main/java/com/sen/api/configs/EnvCenter.java`
+
+**功能特性**:
+- 支持 dev / test / stage / prod 四种环境
+- 通过命令参数切换：`-Denv=test`
+- 不同环境的 URL / token / headers 自动切换
+
+**使用方式**:
+```bash
+# 运行测试时切换环境
+mvn clean test -Denv=test
+mvn clean test -Denv=prod
+```
+
+```java
+// 代码中使用
+EnvCenter envCenter = EnvCenter.getInstance();
+envCenter.init("env-config.yml");
+envCenter.switchEnvironment("test");
+String rootUrl = envCenter.getRootUrl();
+```
+
+**配置文件**: `src/main/resources/env-config.yml`
+
+---
+
+### 2.2 Token 自动获取与刷新机制
+
+**文件位置**: `src/main/java/com/sen/api/utils/TokenManager.java`
+
+**功能特性**:
+- 自动登录获取 Token
+- Token 缓存池管理
+- Token 过期自动刷新（提前60秒刷新）
+- 多账号支持（admin/user/guest…）
+
+**使用方式**:
+```java
+TokenManager tokenManager = TokenManager.getInstance();
+tokenManager.init("https://api.example.com");
+
+// 获取Token（自动登录/刷新）
+String token = tokenManager.getToken("admin");
+
+// 切换账号
+tokenManager.switchAccount("user");
+```
+
+---
+
+### 2.3 API 调用链执行器
+
+**文件位置**: `src/main/java/com/sen/api/utils/ApiFlowExecutor.java`
+
+**功能特性**:
+- 支持链式调用：login → getUser → createOrder → pay
+- 步骤间数据共享
+- 支持步骤重试和延迟
+- 成功/失败回调
+
+**使用方式**:
+```java
+ApiFlowExecutor flow = ApiFlowExecutor.create("订单流程")
+    .rootUrl("https://api.example.com")
+    .login("/api/login", "admin", "password", "$.token", "token")
+    .post("创建订单", "/api/order", "{\"productId\":1}", "orderId", "$.orderId")
+    .get("查询订单", "/api/order/${orderId}");
+
+ApiFlowExecutor.FlowResult result = flow.execute();
+```
+
+---
+
+### 2.4 YAML DSL 测试引擎
+
+**文件位置**: `src/main/java/com/sen/api/utils/YamlDslTestEngine.java`
+
+**功能特性**:
+- QA 无需编写 Java 代码
+- 纯 YAML 格式编写测试用例
+- 支持变量引用和函数调用
+
+**用例格式** (`data/dsl-test-cases.yml`):
+```yaml
+- name: 获取用户信息
+  api: /user/get
+  method: GET
+  params:
+    id: 1
+  validate:
+    - status: 200
+    - $.code: 0
+    - $.data.name: notEmpty
+  save:
+    userName: $.data.name
+```
+
+**使用方式**:
+```java
+YamlDslTestEngine engine = YamlDslTestEngine.getInstance();
+engine.initFromEnvCenter();
+YamlDslTestEngine.DslSuiteResult result = engine.runFromFile("data/dsl-test-cases.yml");
+```
+
+---
+
+### 2.5 Mock 能力增强
+
+**文件位置**: `src/main/java/com/sen/api/utils/MockUtil.java`
+
+**新增功能**:
+- Mock 接口未开发
+- Mock 异常场景（500/502/503/504/Timeout）
+- Mock AB 实验
+- 场景管理（保存/加载）
+
+**使用方式**:
+```java
+// Mock 500错误
+MockUtil.stubInternalServerError("/api/error");
+
+// Mock 超时
+MockUtil.stubTimeout("/api/slow", 30000);
+
+// AB实验
+MockUtil.ABExperiment experiment = MockUtil.createABExperiment("test", "/api/feature")
+    .addVariant("A", "{\"version\":\"A\"}", 200, 70)
+    .addVariant("B", "{\"version\":\"B\"}", 200, 30);
+MockUtil.applyABExperiment("test");
+
+// 从YAML加载Mock
+MockUtil.loadMockFromYaml("mock-config.yml");
+```
+
+---
+
+### 2.6 日志体系优化
+
+**文件位置**:
+- `src/main/java/com/sen/api/utils/LogEnhancer.java`
+- `src/main/resources/logback.xml`
+
+**功能特性**:
+- 请求/响应日志
+- traceId 追踪
+- 失败用例日志特殊标记
+- 分离日志文件
+
+**日志文件**:
+| 文件 | 说明 |
+|------|------|
+| logs/api-test.log | 所有日志 |
+| logs/api-test-error.log | 错误日志 |
+| logs/api-test-failed.log | 失败用例日志 |
+| logs/api-test-http.log | HTTP请求响应日志 |
+
+**使用方式**:
+```java
+LogEnhancer.startTestCase("用例名称");
+LogEnhancer.logRequest("POST", "/api/users", headers, body);
+LogEnhancer.logResponse(200, responseHeaders, responseBody, durationMs);
+LogEnhancer.endTestCase("用例名称", true);
+```
+
+---
+
+### 2.7 新增文件清单
+
+| 文件 | 说明 |
+|------|------|
+| `src/main/java/com/sen/api/configs/EnvCenter.java` | 多环境管理中心 |
+| `src/main/java/com/sen/api/utils/TokenManager.java` | Token自动管理 |
+| `src/main/java/com/sen/api/utils/ApiFlowExecutor.java` | API调用链执行器 |
+| `src/main/java/com/sen/api/utils/YamlDslTestEngine.java` | YAML DSL引擎 |
+| `src/main/java/com/sen/api/utils/LogEnhancer.java` | 日志增强工具 |
+| `src/main/resources/env-config.yml` | 环境配置文件 |
+| `src/main/resources/mock-config.yml` | Mock配置文件 |
+| `data/dsl-test-cases.yml` | DSL测试用例示例 |
+
+---
+
+## 3. 重构更新日志
+
+### V3.1.0 (2025-12-07) - 功能增强版
+
+#### 新增功能
+
+| 功能 | 说明 |
+|------|------|
+| 多环境管理（ENV Center） | 支持 dev/test/stage/prod 环境切换 |
+| Token自动管理 | 自动获取、缓存、刷新Token |
+| API调用链执行器 | 支持复杂业务流程自动化 |
+| YAML DSL引擎 | QA无需写Java即可编写用例 |
+| Mock能力增强 | 异常场景、AB实验、场景管理 |
+| 日志体系优化 | traceId追踪、失败标记、分离日志 |
 
 ### V3.0.0 (2025-12-06) - 架构重构版
 
@@ -431,18 +633,25 @@ allure serve target/allure-results
 
 ## 总结
 
-### V3.0.0 版本改进总结
+### 版本演进
 
-1. **架构统一**: 移除遗留代码，全面使用Spring Boot
-2. **配置统一**: 废弃XML，统一使用YAML配置
-3. **报告统一**: 移除ExtentReports，统一使用Allure
-4. **断言增强**: 支持12种操作符（=, !=, >, >=, <, <=, ~=, :exist, :null, :in等）
-5. **超时控制**: 可配置HTTP连接/读取/写入超时
-6. **标签管理**: 支持测试用例标签、分组、优先级
-7. **异常处理**: 完善的异常类层次结构
-8. **代码质量**: 修复拼写错误，统一代码风格
+| 版本 | 日期 | 主要更新 |
+|------|------|----------|
+| V3.1.0 | 2025-12-07 | 多环境管理、Token自动化、API调用链、YAML DSL、Mock增强、日志优化 |
+| V3.0.0 | 2025-12-06 | 架构统一、YAML配置、Allure报告、断言增强 |
+| V2.0.0 | - | 现代化技术栈重构 |
+| V1.0.0 | - | 初始版本 |
+
+### V3.1.0 版本改进总结
+
+1. **多环境管理**: 支持 dev/test/stage/prod 环境一键切换
+2. **Token自动化**: 自动登录、缓存、刷新，支持多账号
+3. **API调用链**: 支持复杂业务流程自动化测试
+4. **YAML DSL**: QA无需写Java代码即可编写测试用例
+5. **Mock增强**: 支持异常场景、AB实验、场景管理
+6. **日志优化**: traceId追踪、失败标记、分离日志文件
 
 ---
 
-> 报告更新时间: 2025-12-06
-> 版本: 3.0.0
+> 报告更新时间: 2025-12-07
+> 版本: 3.1.0

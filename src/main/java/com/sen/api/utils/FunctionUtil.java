@@ -42,5 +42,8 @@ public class FunctionUtil{
 		}
 	}
 
+    public static String execute(String funcName, String[] argArray) {
+		return null;
+	}
 }
 

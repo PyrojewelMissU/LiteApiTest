@@ -1,0 +1,114 @@
+# 多环境配置中心
+# 使用方式: mvn clean test -Denv=test
+
+environments:
+  # 开发环境
+  dev:
+    rootUrl: https://jsonplaceholder.typicode.com
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+      X-Env: dev
+    params:
+      test_env: development
+    tokens:
+      admin: dev_admin_token_placeholder
+      user: dev_user_token_placeholder
+      guest: dev_guest_token_placeholder
+    database:
+      enabled: true
+      url: jdbc:mysql://localhost:3306/test_dev
+      username: root
+      password: 123456
+    mock:
+      enabled: true
+      port: 8089
+      host: localhost
+
+  # 测试环境
+  test:
+    rootUrl: https://api-test.example.com
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+      X-Env: test
+    params:
+      test_env: testing
+    tokens:
+      admin: test_admin_token_placeholder
+      user: test_user_token_placeholder
+      guest: test_guest_token_placeholder
+    database:
+      enabled: true
+      url: jdbc:mysql://test-db.example.com:3306/test_qa
+      username: test_user
+      password: test_password
+    mock:
+      enabled: false
+      port: 8089
+      host: localhost
+
+  # 预发布环境
+  stage:
+    rootUrl: https://api-stage.example.com
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+      X-Env: stage
+    params:
+      test_env: staging
+    tokens:
+      admin: stage_admin_token_placeholder
+      user: stage_user_token_placeholder
+    database:
+      enabled: true
+      url: jdbc:mysql://stage-db.example.com:3306/stage_db
+      username: stage_user
+      password: stage_password
+    mock:
+      enabled: false
+      port: 8089
+      host: localhost
+
+  # 生产环境
+  prod:
+    rootUrl: https://api.example.com
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+      X-Env: prod
+    params:
+      test_env: production
+    tokens:
+      admin: ${PROD_ADMIN_TOKEN}
+      user: ${PROD_USER_TOKEN}
+    database:
+      enabled: false
+      url: jdbc:mysql://prod-db.example.com:3306/prod_db
+      username: ${PROD_DB_USER}
+      password: ${PROD_DB_PASSWORD}
+    mock:
+      enabled: false
+      port: 8089
+      host: localhost
+
+# 账号配置（用于Token自动获取）
+accounts:
+  admin:
+    username: admin
+    password: admin123
+    loginUrl: /api/auth/login
+    tokenPath: $.data.accessToken
+    refreshTokenPath: $.data.refreshToken
+  user:
+    username: testuser
+    password: test123
+    loginUrl: /api/auth/login
+    tokenPath: $.data.accessToken
+    refreshTokenPath: $.data.refreshToken
+  guest:
+    username: guest
+    password: guest123
+    loginUrl: /api/auth/login
+    tokenPath: $.data.accessToken
+    refreshTokenPath: $.data.refreshToken
